@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pokedex</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 min-h-screen">
+
+<div class="max-w-5xl mx-auto p-7">
+
+<h1 class="text-4xl font-extrabold text-center mb-8 text-gray-800 -tracking-normal">
+  Pokédex Explorer
+</h1>
+
+<!-- SEARCH + FILTER -->
+<div class="flex flex-col md:flex-row gap-3 mb-8">
+
+  <!-- SEARCH -->
+  <div class="relative w-full">
+    <input
+      id="searchInput"
+      type="text"
+      placeholder="Search Pokémon..."
+      class="hover:shadow-md border border-gray-300 p-3 w-full rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400 outline-none bg-white"
+      onkeyup="handleSearch(event)"
+    />
+
+    <ul id="suggestions"
+      class="absolute bg-gradient-to-br from-white to to-blue-200 border w-full mt-1 rounded-xl shadow-lg hidden max-h-60 overflow-y-auto z-50">
+    </ul>
+  </div>
+
+  <!-- FILTER -->
+  <select id="typeFilter"
+    class="border border-gray-300 p-3 rounded-xl shadow-sm bg-white hover:shadow-md transition"
+    onchange="filterByType()">
+    <option value="">All Types</option>
+  </select>
+
+</div>
+
+<!-- CONTAINER -->
+<div id="pokemonContainer"
+  class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+</div>
+
+</div>
+
+<script>
+
+const container = document.getElementById("pokemonContainer");
+let pokemonList = [];
+
+/* LOAD HOME PAGE */
+async function loadPokemon() {
+  container.innerHTML = "<p class='col-span-4 text-center'>Loading Pokémon...</p>";
+
+  const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1000");
+  const data = await res.json();
+
+  container.innerHTML = "";
+
+  const sortedPokemon = data.results.sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+
+  sortedPokemon.forEach(async (pokemon) => {
+    const res2 = await fetch(pokemon.url);
+    const pokeData = await res2.json();
+    createCard(pokeData);
+  });
+}
+
+/* LOAD NAMES FOR SEARCH */
+async function loadPokemonNames() {
+  const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1000");
+  const data = await res.json();
+  pokemonList = data.results.map(p => p.name);
+}
+
+/* LOAD TYPES FOR FILTER */
+async function loadTypes() {
+  const res = await fetch("https://pokeapi.co/api/v2/type");
+  const data = await res.json(); 
+
+  const select = document.getElementById("typeFilter");
+
+  const excludedTypes = ["unknown", "shadow","Stellar"];
+
+  data.results
+    .filter(type => !excludedTypes.includes(type.name))
+    .sort((a,b)=>a.name.localeCompare(b.name))
+    .forEach(type => {
+      const option = document.createElement("option");
+      option.value = type.name;
+      option.textContent = type.name.charAt(0).toUpperCase()+type.name.slice(1);
+      select.appendChild(option);
+    });
+}
+
+/* FILTER BY TYPE */
+async function filterByType() {
+  const type = document.getElementById("typeFilter").value;
+
+  if (!type) {
+    loadPokemon();
+    return;
+  }
+
+  container.innerHTML = "<p class='col-span-4 text-center'>Loading...</p>";
+
+  const res = await fetch(`https://pokeapi.co/api/v2/type/${type}`);
+  const data = await res.json();
+
+  container.innerHTML = "";
+
+  const sortedPokemon = data.pokemon.sort((a, b) =>
+    a.pokemon.name.localeCompare(b.pokemon.name)
+  );
+
+  sortedPokemon.forEach(async (p) => {
+    const res2 = await fetch(p.pokemon.url);
+    const pokeData = await res2.json();
+    createCard(pokeData);
+  });
+}
+
+/* CREATE CARD */
+function createCard(pokemon) {
+  const card = document.createElement("div");
+
+  const imageUrl =
+    pokemon.sprites.other['official-artwork'].front_default ||
+    pokemon.sprites.front_default ||
+    "https://via.placeholder.com/96?text=No+Image";
+
+  card.className =
+    "bg-white/80 backdrop-blur p-4 rounded-2xl shadow-md text-center cursor-pointer hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition duration-300";
+
+  card.innerHTML = `
+    <img src="${imageUrl}" 
+         class="mx-auto mb-3 w-25 h-15 object-contain drop-shadow">
+
+    <h2 class="font-semibold text-lg capitalize text-gray-800">${pokemon.name}</h2>
+
+    <p class="text-md capitalize text-gray-600 mt-1">
+      ${pokemon.types.map(t => t.type.name).join(", ")}
+    </p>
+  `;
+
+  card.addEventListener("click", () => {
+    showDetails(pokemon);
+  });
+
+  container.appendChild(card);
+}
+
+/* SHOW DETAILS */
+function showDetails(pokemon) {
+  container.innerHTML = "";
+
+  const statsHTML = pokemon.stats.map(stat => `
+    <div class="flex justify-between bg-gray-100 px-3 py-1 rounded mb-1">
+      <span class="capitalize">${stat.stat.name}</span>
+      <span>${stat.base_stat}</span>
+    </div>
+  `).join("");
+
+  const abilitiesHTML = pokemon.abilities.map(a => a.ability.name).join(", ");
+
+  const imageUrl =
+    pokemon.sprites.other['official-artwork'].front_default ||
+    pokemon.sprites.front_default;
+
+  const card = document.createElement("div");
+  card.className =
+    "bg-white/90 backdrop-blur p-8 rounded-2xl shadow-xl col-span-2 md:col-span-4 text-center";
+
+  card.innerHTML = `
+    <button onclick="goHome()" 
+      class="mb-4 bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
+      ← Back to Home
+    </button>
+
+    <img src="${imageUrl}" 
+         class="mx-auto w-48 mb-4 drop-shadow-lg">
+
+    <h2 class="text-3xl font-bold capitalize mb-3 text-gray-800">${pokemon.name}</h2>
+
+    <p><strong>Type:</strong> ${pokemon.types.map(t => t.type.name).join(", ")}</p>
+    <p><strong>Height:</strong> ${pokemon.height}</p>
+    <p><strong>Weight:</strong> ${pokemon.weight}</p>
+    <p><strong>Abilities:</strong> ${abilitiesHTML}</p>
+
+    <div class="mt-4 text-left max-w-md mx-auto">
+      <h3 class="font-semibold mb-2 text-center">Stats</h3>
+      ${statsHTML}
+    </div>
+  `;
+
+  container.appendChild(card);
+}
+
+/* BACK BUTTON */
+function goHome() {
+  document.getElementById("searchInput").value = "";
+  document.getElementById("typeFilter").value = "";
+  loadPokemon();
+}
+
+/* SEARCH */
+async function searchPokemon() {
+  const name = document.getElementById("searchInput").value.toLowerCase();
+  if (!name) return;
+
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+  const data = await res.json();
+  showDetails(data);
+}
+
+/* AUTOCOMPLETE */
+function handleSearch(event) {
+  const inputField = document.getElementById("searchInput");
+  const suggestionBox = document.getElementById("suggestions");
+  const input = inputField.value.trim().toLowerCase();
+
+  if (event.key === "Enter") {
+    suggestionBox.classList.add("hidden");
+    searchPokemon();
+    return;
+  }
+
+  if (input === "") {
+    suggestionBox.classList.add("hidden");
+    loadPokemon();
+    return;
+  }
+
+  if (input.length < 2) {
+    suggestionBox.classList.add("hidden");
+    return;
+  }
+
+  const matches = pokemonList
+    .filter(name => name.startsWith(input))
+    .slice(0, 8);
+
+  showSuggestions(matches);
+}
+
+/* SHOW SUGGESTIONS */
+function showSuggestions(matches) {
+  const suggestionBox = document.getElementById("suggestions");
+  suggestionBox.innerHTML = "";
+
+  matches.forEach(name => {
+    const li = document.createElement("li");
+    li.textContent = name;
+    li.className = "p-2 hover:bg-gray-200 cursor-pointer capitalize";
+
+    li.onclick = () => selectPokemon(name);
+
+    suggestionBox.appendChild(li);
+  });
+
+  suggestionBox.classList.remove("hidden");
+}
+
+/* SELECT SUGGESTION */
+async function selectPokemon(name) {
+  document.getElementById("searchInput").value = name;
+  document.getElementById("suggestions").classList.add("hidden");
+
+  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+  const data = await res.json();
+
+  showDetails(data);
+}
+
+/* INIT */
+loadPokemon();
+loadPokemonNames();
+loadTypes();
+
+</script>
+
+</body>
+</html>
