@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Temporary Form Storage</title>
+</head>
+<body>
+
+<h2>User Form</h2>
+
+<form id="userForm">
+    Name:<br>
+    <input type="text" id="name" required><br><br>
+
+    Email:<br>
+    <input type="email" id="email" required><br><br>
+
+    <button type="submit">Submit</button>
+</form>
+
+<h3>Saved Users:</h3>
+<pre id="output"></pre>
+
+<script>
+    const form = document.getElementById("userForm");
+    const output = document.getElementById("output");
+
+    let users = JSON.parse(sessionStorage.getItem("users")) || [];
+    displayUsers();
+
+    form.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+
+        const userData = { name, email };
+
+        users.push(userData);
+
+        sessionStorage.setItem("users", JSON.stringify(users));
+
+        displayUsers();
+
+        form.reset();
+    });
+
+    function displayUsers() {
+        output.textContent = JSON.stringify(users, null, 2);
+    }
+</script>
+
+</body>
+</html>

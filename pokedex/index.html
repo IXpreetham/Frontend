@@ -1,198 +1,217 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>Pokedex</title>
-<script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <title>Pokedex</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 min-h-screen">
-
-<div class="max-w-5xl mx-auto p-7">
-
-<h1 class="text-4xl font-extrabold text-center mb-8 text-gray-800 -tracking-normal">
-  Pokédex Explorer
-</h1>
-
-<!-- SEARCH + FILTER -->
-<div class="flex flex-col md:flex-row gap-3 mb-8">
-
-  <!-- SEARCH -->
-  <div class="relative w-full">
-    <input
-      id="searchInput"
-      type="text"
-      placeholder="Search Pokémon..."
-      class="hover:shadow-md border border-gray-300 p-3 w-full rounded-xl shadow-sm focus:ring-2 focus:ring-blue-400 outline-none bg-white"
-      onkeyup="handleSearch(event)"
-    />
-
-    <ul id="suggestions"
-      class="absolute bg-gradient-to-br from-white to to-blue-200 border w-full mt-1 rounded-xl shadow-lg hidden max-h-60 overflow-y-auto z-50">
-    </ul>
+<body class="relative min-h-screen overflow-x-hidden">
+  <div class="absolute inset-0 bg-cover bg-center bg-fixed"
+    style="background-image: url('https://wallpapercave.com/wp/wp3961345.jpg');">
   </div>
+  <div class="absolute inset-0 bg-/70 backdrop-blur-sm"></div>
+  <div class="relative z-10 max-w-5xl mx-auto p-7">
+    <div class="max-w-5xl mx-auto p-7">
+      <h1
+        class="text-5xl font-extrabold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-pink-500 to-yellow-400 drop-shadow-md">
+        Pokédex Explorer
+      </h1>
 
-  <!-- FILTER -->
-  <select id="typeFilter"
-    class="border border-gray-300 p-3 rounded-xl shadow-sm bg-white hover:shadow-md transition"
-    onchange="filterByType()">
-    <option value="">All Types</option>
-  </select>
+      <div id="controls">
+        <!-- SEARCH -->
+        <div class="mb-6 relative max-w-2xl mx-auto">
+          <input id="searchInput" type="text" placeholder="Search Pokémon..."
+            class="border border-gray-300 p-4 w-full rounded-2xl shadow-lg focus:ring-4 focus:ring-blue-300 outline-none bg-white text-lg transition-all"
+            onkeyup="handleSearch(event)" />
+          <ul id="suggestions"
+            class="absolute bg-white border w-full mt-2 rounded-2xl shadow-2xl hidden max-h-60 overflow-y-auto z-50 p-2">
+          </ul>
+        </div>
 
-</div>
+        <!-- TYPE FILTERS -->
+        <div class="bg-white/30 backdrop-blur-md p-6 rounded-3xl shadow-xl mb-10 border border-white/20">
+          <div id="typeTags" class="flex flex-wrap gap-3 justify-center">
+          </div>
+        </div>
+      </div>
 
-<!-- CONTAINER -->
-<div id="pokemonContainer"
-  class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-</div>
+      <!-- CONTAINER -->
+      <div id="pokemonContainer" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+      </div>
 
-</div>
+      <div id="pagination" class="flex justify-center mt-8 gap-2"></div>
 
-<script>
+    </div>
 
-const container = document.getElementById("pokemonContainer");
-let pokemonList = [];
+    <script>
+      const typeColors = {
+        grass: "from-green-400 to-green-600",
+        fire: "from-red-400 to-orange-500",
+        water: "from-blue-400 to-blue-600",
+        electric: "from-yellow-300 to-yellow-500",
+        bug: "from-lime-400 to-green-500",
+        poison: "from-purple-400 to-purple-600",
+        flying: "from-indigo-300 to-indigo-500",
+        normal: "from-gray-300 to-gray-400",
+        ground: "from-yellow-600 to-amber-700",
+        fairy: "from-pink-300 to-pink-500",
+        fighting: "from-red-600 to-red-800",
+        psychic: "from-pink-500 to-purple-500",
+        rock: "from-yellow-700 to-yellow-900",
+        ghost: "from-indigo-700 to-purple-800",
+        ice: "from-cyan-300 to-blue-400",
+        dragon: "from-indigo-600 to-purple-700",
+        dark: "from-gray-700 to-gray-900",
+        steel: "from-gray-400 to-gray-600"
+      };
 
-/* LOAD HOME PAGE */
-async function loadPokemon() {
-  container.innerHTML = "<p class='col-span-4 text-center'>Loading Pokémon...</p>";
+      let allPokemonData = [];
+      let currentPokemonData = [];
+      let currentDetailIndex = 0;
+      let currentPage = 1;
+      const limit = 20;
+      let totalPages = 0;
+      let selectedTypes = [];
+      let isInitialLoad = true;
+      let lastFetchedContext = { page: null, type: null };
 
-  const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1000");
-  const data = await res.json();
+      const container = document.getElementById("pokemonContainer");
+      let pokemonList = [];
 
-  container.innerHTML = "";
+      /* LOAD POKEMON */
+      async function loadPokemon(page = 1) {
+        selectedTypes = [];
+        updateURL({ page, type: "" });
+        updateChipsUI();
+        await actualLoadPokemon(page);
+      }
 
-  const sortedPokemon = data.results.sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
 
-  sortedPokemon.forEach(async (pokemon) => {
-    const res2 = await fetch(pokemon.url);
-    const pokeData = await res2.json();
-    createCard(pokeData);
-  });
-}
+      /* PAGINATION */
+      function renderPagination() {
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
 
-/* LOAD NAMES FOR SEARCH */
-async function loadPokemonNames() {
-  const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1000");
-  const data = await res.json();
-  pokemonList = data.results.map(p => p.name);
-}
+        let start = Math.max(1, currentPage - 2);
+        let end = Math.min(totalPages, currentPage + 2);
 
-/* LOAD TYPES FOR FILTER */
-async function loadTypes() {
-  const res = await fetch("https://pokeapi.co/api/v2/type");
-  const data = await res.json(); 
+        if (currentPage <= 3) {
+          start = 1;
+          end = Math.min(totalPages, 5);
+        }
 
-  const select = document.getElementById("typeFilter");
+        if (currentPage >= totalPages - 2) {
+          end = totalPages;
+          start = Math.max(1, totalPages - 4);
+        }
 
-  const excludedTypes = ["unknown", "shadow","Stellar"];
+        if (currentPage > 1) {
+          const prevBtn = document.createElement("button");
+          prevBtn.textContent = "«";
+          prevBtn.className = "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300";
+          prevBtn.onclick = () => loadPokemon(currentPage - 1);
+          pagination.appendChild(prevBtn);
+        }
 
-  data.results
-    .filter(type => !excludedTypes.includes(type.name))
-    .sort((a,b)=>a.name.localeCompare(b.name))
-    .forEach(type => {
-      const option = document.createElement("option");
-      option.value = type.name;
-      option.textContent = type.name.charAt(0).toUpperCase()+type.name.slice(1);
-      select.appendChild(option);
-    });
-}
+        for (let i = start; i <= end; i++) {
+          const btn = document.createElement("button");
+          btn.textContent = i;
+          btn.className =
+            `px-3 py-1 rounded ${i === currentPage
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200 hover:bg-gray-300"
+            }`;
+          btn.onclick = () => loadPokemon(i);
+          pagination.appendChild(btn);
+        }
 
-/* FILTER BY TYPE */
-async function filterByType() {
-  const type = document.getElementById("typeFilter").value;
+        if (currentPage < totalPages) {
+          const nextBtn = document.createElement("button");
+          nextBtn.textContent = "»";
+          nextBtn.className = "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300";
+          nextBtn.onclick = () => loadPokemon(currentPage + 1);
+          pagination.appendChild(nextBtn);
+        }
+      }
 
-  if (!type) {
-    loadPokemon();
-    return;
-  }
+      /* CREATE CARD */
+      function createCard(pokemon) { 
+        const card = document.createElement("div");
+        const mainType = pokemon.types[0].type.name;
+        const gradient = typeColors[mainType] || "from-gray-300 to-gray-400";
 
-  container.innerHTML = "<p class='col-span-4 text-center'>Loading...</p>";
+        card.className =
+          `bg-gradient-to-br ${gradient} p-4 rounded-2xl shadow-lg text-white
+   text-center cursor-pointer hover:scale-105 hover:shadow-xl transition`;
 
-  const res = await fetch(`https://pokeapi.co/api/v2/type/${type}`);
-  const data = await res.json();
 
-  container.innerHTML = "";
-
-  const sortedPokemon = data.pokemon.sort((a, b) =>
-    a.pokemon.name.localeCompare(b.pokemon.name)
-  );
-
-  sortedPokemon.forEach(async (p) => {
-    const res2 = await fetch(p.pokemon.url);
-    const pokeData = await res2.json();
-    createCard(pokeData);
-  });
-}
-
-/* CREATE CARD */
-function createCard(pokemon) {
-  const card = document.createElement("div");
-
-  const imageUrl =
-    pokemon.sprites.other['official-artwork'].front_default ||
-    pokemon.sprites.front_default ||
-    "https://via.placeholder.com/96?text=No+Image";
-
-  card.className =
-    "bg-white/80 backdrop-blur p-4 rounded-2xl shadow-md text-center cursor-pointer hover:shadow-xl hover:-translate-y-1 hover:scale-105 transition duration-300";
-
-  card.innerHTML = `
-    <img src="${imageUrl}" 
-         class="mx-auto mb-3 w-25 h-15 object-contain drop-shadow">
-
-    <h2 class="font-semibold text-lg capitalize text-gray-800">${pokemon.name}</h2>
-
-    <p class="text-md capitalize text-gray-600 mt-1">
+        const imageUrl =
+          pokemon.sprites.other['official-artwork'].front_default ||
+          pokemon.sprites.front_default;
+        card.innerHTML = `
+    <img src="${imageUrl}" class="mx-auto mb-3 w-24 h-24 object-contain">
+    <h2 class="font-semibold text-lg capitalize">${pokemon.name}</h2>
+    <p class="text-sm text-white/80 capitalize">
       ${pokemon.types.map(t => t.type.name).join(", ")}
     </p>
   `;
 
-  card.addEventListener("click", () => {
-    showDetails(pokemon);
-  });
+        card.addEventListener("click", () => {
+          window.location.hash = `/${pokemon.name}`;
+        });
 
-  container.appendChild(card);
-}
+        container.appendChild(card);
+      }
 
-/* SHOW DETAILS */
-function showDetails(pokemon) {
-  container.innerHTML = "";
+      /* SHOW DETAILS WITH NAVIGATION */
+      function showDetails(pokemon) {
 
-  const statsHTML = pokemon.stats.map(stat => `
+        container.innerHTML = "";
+        document.getElementById("pagination").classList.add("hidden");
+        document.getElementById("controls").classList.add("hidden");
+
+        const imageUrl =
+          pokemon.sprites.other['official-artwork'].front_default ||
+          pokemon.sprites.front_default;
+
+        const statsHTML = pokemon.stats.map(stat => `
     <div class="flex justify-between bg-gray-100 px-3 py-1 rounded mb-1">
       <span class="capitalize">${stat.stat.name}</span>
       <span>${stat.base_stat}</span>
     </div>
   `).join("");
 
-  const abilitiesHTML = pokemon.abilities.map(a => a.ability.name).join(", ");
+        const card = document.createElement("div");
+        card.className =
+          "bg-white p-8 rounded-2xl shadow-xl col-span-4 text-center";
 
-  const imageUrl =
-    pokemon.sprites.other['official-artwork'].front_default ||
-    pokemon.sprites.front_default;
+        card.innerHTML = `
+    <div class="flex justify-between items-center mb-6">
+      <button onclick="showPrevious()" 
+        class="text-2xl px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+        ←
+      </button>
 
-  const card = document.createElement("div");
-  card.className =
-    "bg-white/90 backdrop-blur p-8 rounded-2xl shadow-xl col-span-2 md:col-span-4 text-center";
+      <button onclick="window.location.hash = ''" 
+        class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
+        Home
+      </button>
 
-  card.innerHTML = `
-    <button onclick="goHome()" 
-      class="mb-4 bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
-      ← Back to Home
-    </button>
+      <button onclick="showNext()" 
+        class="text-2xl px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
+        →
+      </button>
+    </div>
 
-    <img src="${imageUrl}" 
-         class="mx-auto w-48 mb-4 drop-shadow-lg">
+    <img src="${imageUrl}" class="mx-auto w-48 mb-4">
 
-    <h2 class="text-3xl font-bold capitalize mb-3 text-gray-800">${pokemon.name}</h2>
+    <h2 class="text-3xl font-bold capitalize mb-3">${pokemon.name}</h2>
 
     <p><strong>Type:</strong> ${pokemon.types.map(t => t.type.name).join(", ")}</p>
     <p><strong>Height:</strong> ${pokemon.height}</p>
     <p><strong>Weight:</strong> ${pokemon.weight}</p>
-    <p><strong>Abilities:</strong> ${abilitiesHTML}</p>
 
     <div class="mt-4 text-left max-w-md mx-auto">
       <h3 class="font-semibold mb-2 text-center">Stats</h3>
@@ -200,91 +219,426 @@ function showDetails(pokemon) {
     </div>
   `;
 
-  container.appendChild(card);
-}
+        container.appendChild(card);
+      }
 
-/* BACK BUTTON */
-function goHome() {
-  document.getElementById("searchInput").value = "";
-  document.getElementById("typeFilter").value = "";
-  loadPokemon();
-}
+      /* DETAIL NAVIGATION */
+      function showPrevious() {
+        if (currentPokemonData.length > 1 && currentDetailIndex > 0) {
+          currentDetailIndex--;
+          const prevPokemon = currentPokemonData[currentDetailIndex];
+          window.location.hash = `/${prevPokemon.name}`;
+        }
+      }
 
-/* SEARCH */
-async function searchPokemon() {
-  const name = document.getElementById("searchInput").value.toLowerCase();
-  if (!name) return;
+      function showNext() {
+        if (currentPokemonData.length > 1 && currentDetailIndex < currentPokemonData.length - 1) {
+          currentDetailIndex++;
+          const nextPokemon = currentPokemonData[currentDetailIndex];
+          window.location.hash = `/${nextPokemon.name}`;
+        }
+      }
 
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
-  const data = await res.json();
-  showDetails(data);
-}
 
-/* AUTOCOMPLETE */
-function handleSearch(event) {
-  const inputField = document.getElementById("searchInput");
-  const suggestionBox = document.getElementById("suggestions");
-  const input = inputField.value.trim().toLowerCase();
+      /* BACK TO HOME */
+      function goHome() {
+        updateURL({ pokemon: "" });
+        document.getElementById("pagination").classList.remove("hidden");
+        document.getElementById("controls").classList.remove("hidden");
 
-  if (event.key === "Enter") {
-    suggestionBox.classList.add("hidden");
-    searchPokemon();
-    return;
-  }
+        if (selectedTypes.length > 0) {
+          // Re-trigger current filter results
+          renderFilteredPageSet(currentPage);
+        } else {
+          loadPokemon(currentPage);
+        }
+      }
 
-  if (input === "") {
-    suggestionBox.classList.add("hidden");
-    loadPokemon();
-    return;
-  }
 
-  if (input.length < 2) {
-    suggestionBox.classList.add("hidden");
-    return;
-  }
 
-  const matches = pokemonList
-    .filter(name => name.startsWith(input))
-    .slice(0, 8);
 
-  showSuggestions(matches);
-}
+      /* SEARCH + AUTOCOMPLETE */
+      async function loadPokemonNames() {
+        const res = await fetch("https://pokeapi.co/api/v2/pokemon?limit=1000");
+        const data = await res.json();
+        pokemonList = data.results.map(p => p.name);
+      }
 
-/* SHOW SUGGESTIONS */
-function showSuggestions(matches) {
-  const suggestionBox = document.getElementById("suggestions");
-  suggestionBox.innerHTML = "";
+      function handleSearch(event) {
+        const input = event.target.value.toLowerCase();
+        const suggestionBox = document.getElementById("suggestions");
 
-  matches.forEach(name => {
-    const li = document.createElement("li");
-    li.textContent = name;
-    li.className = "p-2 hover:bg-gray-200 cursor-pointer capitalize";
+        if (event.key === "Enter") {
+          searchPokemon();
+          suggestionBox.classList.add("hidden");
+          return;
+        }
 
-    li.onclick = () => selectPokemon(name);
+        if (input.length < 2) {
+          suggestionBox.classList.add("hidden");
+          return;
+        }
 
-    suggestionBox.appendChild(li);
-  });
+        const matches = pokemonList
+          .filter(name => name.startsWith(input))
+          .slice(0, 8);
 
-  suggestionBox.classList.remove("hidden");
-}
+        suggestionBox.innerHTML = "";
+        matches.forEach(name => {
+          const li = document.createElement("li");
+          li.textContent = name;
+          li.className = "p-2 hover:bg-gray-200 cursor-pointer capitalize";
+          li.onclick = () => selectPokemon(name);
+          suggestionBox.appendChild(li);
+        });
 
-/* SELECT SUGGESTION */
-async function selectPokemon(name) {
-  document.getElementById("searchInput").value = name;
-  document.getElementById("suggestions").classList.add("hidden");
+        suggestionBox.classList.remove("hidden");
+      }
 
-  const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
-  const data = await res.json();
 
-  showDetails(data);
-}
+      async function searchPokemon() {
+        const name = document.getElementById("searchInput").value.toLowerCase();
+        if (!name) return;
 
-/* INIT */
-loadPokemon();
-loadPokemonNames();
-loadTypes();
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+        const data = await res.json();
 
-</script>
+        currentPokemonData = [data];
+        currentDetailIndex = 0;
 
+        showDetails(data);
+      }
+
+      async function selectPokemon(name) {
+        document.getElementById("searchInput").value = name;
+        document.getElementById("suggestions").classList.add("hidden");
+        searchPokemon();
+      }
+      async function filterByType(type, page = 1) {
+        if (!type) {
+          await loadPokemon(1);
+          return;
+        }
+
+        // Toggle type
+        if (selectedTypes.includes(type)) {
+          selectedTypes = selectedTypes.filter(t => t !== type);
+        } else {
+          selectedTypes.push(type);
+        }
+
+        if (selectedTypes.length === 0) {
+          await loadPokemon(1);
+          return;
+        }
+
+        currentPage = page;
+        updateURL({ page, type: selectedTypes.join(",") });
+        updateChipsUI();
+
+        await performTypeFilter(page);
+      }
+
+      function updateChipsUI() {
+        document.querySelectorAll('.type-chip').forEach(chip => {
+          chip.classList.remove('ring-4', 'ring-blue-400', 'scale-110');
+          if (selectedTypes.includes(chip.dataset.type)) {
+            chip.classList.add('ring-4', 'ring-blue-400', 'scale-110');
+          }
+        });
+
+        const allChip = document.getElementById('chip-all');
+        if (selectedTypes.length === 0) {
+          allChip.classList.add('ring-4', 'ring-blue-400', 'scale-110');
+        } else {
+          allChip.classList.remove('ring-4', 'ring-blue-400', 'scale-110');
+        }
+      }
+
+      function updateURL(params) {
+        const url = new URL(window.location);
+        const searchParams = url.searchParams;
+
+        Object.keys(params).forEach(key => {
+          if (params[key]) {
+            searchParams.set(key, params[key]);
+          } else {
+            searchParams.delete(key);
+          }
+        });
+
+        const newSearch = searchParams.toString();
+        const finalURL = `${window.location.pathname}${newSearch ? '?' + newSearch : ''}${window.location.hash}`;
+
+        if (window.location.search !== '?' + newSearch) {
+          history.pushState(null, "", finalURL);
+        }
+      }
+
+      async function router() {
+        const hash = window.location.hash;
+        const params = new URLSearchParams(window.location.search);
+        const pageFromUrl = parseInt(params.get("page")) || 1;
+        const typeFromUrl = params.get("type");
+
+        if (hash.startsWith('#/')) {
+          // 1. Show details immediately
+          document.getElementById("controls").classList.add("hidden");
+          document.getElementById("pagination").classList.add("hidden");
+          container.innerHTML = "<p class='col-span-4 text-center'>Loading Pokémon...</p>";
+
+          const pokemonName = hash.split('/')[1];
+          await fetchPokemonByName(pokemonName);
+
+          // 2. Silent background load for navigation context
+          // Check if we already have the context in memory
+          const currentTypeString = typeFromUrl || "";
+          if (lastFetchedContext.page === pageFromUrl && lastFetchedContext.type === currentTypeString && currentPokemonData.length > 0) {
+            // Already have the data, just update index
+            currentDetailIndex = currentPokemonData.findIndex(p => p.name === pokemonName);
+            return;
+          }
+
+          if (typeFromUrl) {
+            selectedTypes = typeFromUrl.split(",");
+            updateChipsUI();
+            fetchFilteredData(pageFromUrl).then(() => {
+              currentDetailIndex = currentPokemonData.findIndex(p => p.name === pokemonName);
+            });
+          } else {
+            fetchMainListData(pageFromUrl).then(() => {
+              currentDetailIndex = currentPokemonData.findIndex(p => p.name === pokemonName);
+            });
+          }
+        } else {
+          document.getElementById("controls").classList.remove("hidden");
+          document.getElementById("pagination").classList.remove("hidden");
+
+          if (typeFromUrl) {
+            selectedTypes = typeFromUrl.split(",");
+            currentPage = pageFromUrl;
+            updateChipsUI();
+            await performTypeFilter(pageFromUrl);
+          } else {
+            await actualLoadPokemon(pageFromUrl);
+          }
+        }
+      }
+
+      async function fetchMainListData(page = 1) {
+        currentPage = page;
+        const offset = (page - 1) * limit;
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`);
+        const data = await res.json();
+        totalPages = Math.ceil(data.count / limit);
+
+        const tempPokemonData = [];
+        for (const pokemon of data.results) {
+          const res2 = await fetch(pokemon.url);
+          tempPokemonData.push(await res2.json());
+        }
+        currentPokemonData = tempPokemonData;
+        lastFetchedContext = { page, type: "" };
+      }
+
+      async function actualLoadPokemon(page = 1) {
+        container.innerHTML = "<p class='col-span-4 text-center'>Loading...</p>";
+        await fetchMainListData(page);
+
+        // Final guard: if user switched to a detail view during fetch, don't render list
+        if (window.location.hash.startsWith('#/')) return;
+
+        container.innerHTML = "";
+        currentPokemonData.forEach(createCard);
+        renderPagination();
+      }
+
+      async function fetchFilteredData(page = 1) {
+        currentPage = page;
+        const typePromises = selectedTypes.map(t => fetch(`https://pokeapi.co/api/v2/type/${t}`).then(r => r.json()));
+        const typeDataList = await Promise.all(typePromises);
+
+        let intersected = typeDataList[0].pokemon.map(p => ({
+          name: p.pokemon.name,
+          url: p.pokemon.url
+        }));
+
+        for (let i = 1; i < typeDataList.length; i++) {
+          const currentTypeNames = new Set(typeDataList[i].pokemon.map(p => p.pokemon.name));
+          intersected = intersected.filter(p => currentTypeNames.has(p.name));
+        }
+
+        allPokemonData = intersected.map(p => ({ pokemon: p }));
+        totalPages = Math.ceil(allPokemonData.length / limit);
+
+        const start = (currentPage - 1) * limit;
+        const end = start + limit;
+        const pageData = allPokemonData.slice(start, end);
+
+        const tempPokemonData = [];
+        for (const p of pageData) {
+          const res = await fetch(p.pokemon.url);
+          tempPokemonData.push(await res.json());
+        }
+        currentPokemonData = tempPokemonData;
+        lastFetchedContext = { page, type: selectedTypes.join(",") };
+      }
+
+      async function performTypeFilter(page = 1) {
+        container.innerHTML = "<p class='col-span-4 text-center'>Loading...</p>";
+        await fetchFilteredData(page);
+
+        // Final guard
+        if (window.location.hash.startsWith('#/')) return;
+
+        renderFilteredPage();
+      }
+      async function renderFilteredPage() {
+        if (window.location.hash.startsWith('#/')) return;
+
+        container.innerHTML = "";
+        // currentPokemonData already populated by fetchFilteredData
+
+        if (allPokemonData.length === 0) {
+          container.innerHTML = `
+            <div class="col-span-full text-center py-10">
+              <p class="text-2xl text-black font-bold opacity-80">No Pokémon found for the selected types.</p>
+              <button onclick="filterByType('')" class="mt-4 px-6 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-all font-semibold">
+                Clear Filters
+              </button>
+            </div>
+          `;
+          document.getElementById("pagination").classList.add("hidden");
+          return;
+        }
+
+        document.getElementById("pagination").classList.remove("hidden");
+        currentPokemonData.forEach(createCard);
+        renderFilteredPagination();
+      }
+
+      function renderFilteredPagination() {
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+
+        let start = Math.max(1, currentPage - 2);
+        let end = Math.min(totalPages, currentPage + 2);
+
+        if (currentPage <= 3) {
+          start = 1;
+          end = Math.min(totalPages, 5);
+        }
+
+        if (currentPage >= totalPages - 2) {
+          end = totalPages;
+          start = Math.max(1, totalPages - 4);
+        }
+
+        if (currentPage > 1) {
+          const prevBtn = document.createElement("button");
+          prevBtn.textContent = "«";
+          prevBtn.className = "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300";
+          prevBtn.onclick = () => renderFilteredPageSet(currentPage - 1);
+          pagination.appendChild(prevBtn);
+        }
+
+        for (let i = start; i <= end; i++) {
+          const btn = document.createElement("button");
+          btn.textContent = i;
+          btn.className = `px-3 py-1 rounded ${i === currentPage ? "bg-blue-500 text-white" : "bg-gray-200 hover:bg-gray-300"}`;
+          btn.onclick = () => {
+            // We need to maintain all current selected types, so we pass one and let the function handle it
+            // Actually, filterByType is designed to toggle. We need a way to just "set page" for current selection.
+            renderFilteredPageSet(i);
+          };
+          pagination.appendChild(btn);
+        }
+
+        if (currentPage < totalPages) {
+          const nextBtn = document.createElement("button");
+          nextBtn.textContent = " »";
+          nextBtn.className = "px-3 py-1 bg-gray-200 rounded hover:bg-gray-300";
+          nextBtn.onclick = () => renderFilteredPageSet(currentPage + 1);
+          pagination.appendChild(nextBtn);
+        }
+      }
+
+      function renderFilteredPageSet(page) {
+        currentPage = page;
+        updateURL({ page, type: selectedTypes.join(",") });
+        performTypeFilter(page);
+      }
+      async function loadTypes() {
+        const res = await fetch("https://pokeapi.co/api/v2/type");
+        const data = await res.json();
+        const typeContainer = document.getElementById("typeTags");
+        const excludedTypes = ["unknown", "shadow"];
+
+        // Add "All" chip
+        const allChip = document.createElement("button");
+        allChip.id = "chip-all";
+        allChip.textContent = "All";
+        allChip.className = "type-chip px-4 py-1 rounded-full bg-gray-200 hover:bg-gray-300 transition-all font-semibold shadow-sm ring-4 ring-blue-400 scale-110";
+        allChip.onclick = () => filterByType("");
+        typeContainer.appendChild(allChip);
+
+        data.results
+          .filter(type => !excludedTypes.includes(type.name))
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .forEach(type => {
+            const chip = document.createElement("button");
+            chip.dataset.type = type.name;
+            chip.className = `type-chip px-5 py-2 rounded-xl text-white font-bold capitalize bg-gradient-to-r ${typeColors[type.name] || 'from-gray-400 to-gray-500'} hover:scale-105 active:scale-95 transition-all shadow-md border-2 border-white/20`;
+            chip.textContent = type.name;
+            chip.onclick = () => filterByType(type.name);
+            typeContainer.appendChild(chip);
+          });
+      }
+      async function fetchPokemonByName(name) {
+        // Try to find in current list first to maintain navigation context
+        let data = currentPokemonData.find(p => p.name === name);
+
+        if (!data) {
+          const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+          if (!res.ok) {
+            container.innerHTML = `<p class='col-span-4 text-center text-red-500'>Pokémon "${name}" not found.</p>`;
+            return;
+          }
+          data = await res.json();
+          currentPokemonData = [data]; // If not in list, it's a single search context
+          currentDetailIndex = 0;
+        } else {
+          currentDetailIndex = currentPokemonData.findIndex(p => p.name === name);
+        }
+
+        document.getElementById("controls").classList.add("hidden");
+        document.getElementById("pagination").classList.add("hidden");
+        showDetails(data);
+      }
+
+
+
+      document.addEventListener("keydown", function (event) {
+
+        const paginationHidden =
+          document.getElementById("pagination").classList.contains("hidden");
+
+        if (!paginationHidden) return;
+
+        if (event.key === "ArrowRight") showNext();
+        if (event.key === "ArrowLeft") showPrevious();
+      });
+
+      /* INIT */
+      window.addEventListener("hashchange", router);
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        await loadTypes();
+        loadPokemonNames();
+        router();
+      });
+    </script>
+  </div>
 </body>
+
 </html>

@@ -1,7 +1,6 @@
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 img {
@@ -16,8 +15,8 @@ body {
 }
 
 .container {
-  max-width: 1200px;
-  margin: auto;
+  max-width: 100%;
+  margin:auto;
   background: white;
 }
 

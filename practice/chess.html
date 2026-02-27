@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Chess Board</title>
+</head>
+
+<body class="flex justify-center items-center min-h-screen bg-gray-200">
+
+  <div id="board" class="grid grid-cols-8 w-96 h-96 border-4 border-black"></div>
+
+  <script>
+    const board = document.getElementById("board");
+
+    for (let row = 0; row < 8; row++) { 
+      for (let col = 0; col < 8; col++) {
+        const square = document.createElement("div");
+
+        if ((row + col) % 2 === 0) {
+          square.className = "bg-white";
+        } else {
+          square.className = "bg-black";
+        }
+
+        board.appendChild(square);
+      }
+    }
+  </script>
+
+</body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Chess Board</title>
+</head>
+
+<body class="flex justify-center items-center min-h-screen bg-gray-200">
+
+  <div class="grid grid-cols-8 w-96 h-96 border-4 border-black">
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+
+
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+
+
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+
+
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+
+
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+    <div class="bg-black"></div>
+    <div class="bg-white"></div>
+
+  </div>
+
+</body>
+</html> 

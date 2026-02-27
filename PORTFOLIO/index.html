@@ -1,136 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Adepu Preetham</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
+    <link href="output.css" rel="stylesheet">
+</head> 
 
-<body>
-    <!-- NAVBAR -->
-    <nav>
-        <h1>Adepu Preetham</h1>
-        <ul>
-            <li><a href="#home">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#education">Education</a></li>
-            <li><a href="#skills">Skills</a></li>
-            <li><a href="#projects">Projects</a></li>
-            <li><a href="#certifications">Certificates</a></li>
-            <li><a href="#contact">Contact</a></li>
+<body class="bg-gray-100 text-gray-800">
 
-        </ul>
-    </nav>
-    <!-- HERO -->
+<nav class="bg-gray-900 text-white p-4">
+  <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <h1 class="text-xl font-bold">Adepu Preetham</h1> 
+    <ul class="flex gap-6">
+      <li><a href="#home" class="hover:text-blue-400">Home</a></li>
+      <li><a href="#about" class="hover:text-blue-400">About</a></li>
+      <li><a href="#education" class="hover:text-blue-400">Education</a></li>
+      <li><a href="#skills" class="hover:text-blue-400">Skills</a></li>
+      <li><a href="#projects" class="hover:text-blue-400">Projects</a></li>
+      <li><a href="#certifications" class="hover:text-blue-400">Certificates</a></li>
+      <li><a href="#contact" class="hover:text-blue-400">Contact</a></li>
+    </ul>
+  </div>
+</nav>
 
-    <section id="home" class="hero">
-        <div class="hero-text">
-            <h1>
-                <p>Hi, I'm <span>Preetham</span></p>
-            </h1>
-            <p>
-            <pre>Full Stack Developer |  AI & Web Enthusiast</pre>
-            </p>
-            <a href="#projects" class="btn">View My Work</a>
-        </div>
-        <img src="assets/profile.png" class="profile">
-    </section>
-
-    <!-- ABOUT -->
-    <section id="about" class="section glass">
-        <h2>About Me</h2>
-        <br>
-        <br>
-        <h4>
-            Motivated Computer Science graduate seeking an entry-level opportunity where
-            I can apply strong problem-solving skills, programming knowledge, and core
-            computer science fundamentals to contribute to organizational goals,
-            learn new technologies quickly, and grow as a versatile software professional.
-        </h4>
-    </section>
-
-    <!-- SKILLS -->
-    <section id="education" class="section glass">
-        <h2>Education</h2>
-        <div class="grid">
-            <div class="edu-card">
-                <h3>Bachelor of Technology</h3><br>
-                <p>Computer Science & Engineering</p><br>
-                <p><strong>Vasavi College Of Enginering</strong> | 2022 - 2026</p>
-                <p>CGPA: 8.58</p>
-            </div>
-            <div class="edu-card">
-                <h3>Intermediate</h3><br>
-                <p>MPC </p><br><strong>Sri Chaitanya Junior College</strong> | 2020 - 2022</p>
-                <p>Percentage: 98.1%</p>
-            </div>
-        </div>
-    </section>
-    <section id="skills" class="section">
-        <h2>Skills</h2>
-        <div class="grid">
-            <div class="card">HTML</div>
-            <div class="card">CSS</div>
-            <div class="card">JavaScript</div>
-            <div class="card">React</div>
-            <div class="card">Node.js</div>
-            <div class="card">MongoDB</div>
-            <div class="card">Python</div>
-            <div class="card">Java</div>
-            <div class="card">MongoDB</div>
-            <div class="card">SQL</div>
-            <div class="card">React</div>
-            <div class="card">Node.js</div>
-            <div class="card">Machine Learning</div>
-            <div class="card">Artificial Intelligence</div>
-            <div class="card">C</div>
-        </div>
-    </section>
-
-    <!-- PROJECTS -->
-    <section id="projects" class="section glass">
-        <h2>Projects</h2>
-        <div class="grid">
-            <div class="project">
-                <h3>AI Theft Detection</h3><br><br>
-                <p>Real-time crime detection using YOLO & LRCN</p>
-            </div>
-            <div class="project">
-                <h3>Online Home Kitchen</h3><br><br>
-                <p>Custom food ordering MERN application.</p>
-            </div>
-            <div class="project">
-                <h3>AI Resume JD Matcher</h3><br><br>
-                <p>Uses AI to compare resumes with job descriptions, score candidates, and suggest skill improvements.
-                </p>
-            </div>
-        </div>
-    </section>
-    <section id="certifications" class="section glass">
-  <h2>Certifications</h2><br>
-  <ul class="cert-list">
-    <li>NPTEL – Problem Solving Through Programming in C, DBMS, Python</li><br>
-    <li>AWS Academy – Cloud Architecting, Cloud Foundations, Cloud Operations</li><br>
-    <li>Cisco – PCAP Python, Programming in Java</li><br>
-    <li>Infosys Springboard – Python Foundation</li><br>
-    <li>HackerRank – Problem Solving, Python, SQL (Basic to Advanced)</li><br>
-  </ul>
+<section id="home" class="text-center py-20 bg-white shadow">
+    <h1 class="text-4xl font-bold mb-4">
+        Hi, I'm <span class="text-blue-600">Preetham</span>
+    </h1>
+    <p class="text-lg text-gray-600 mb-6">
+        Full Stack Developer | AI & Web Enthusiast
+    </p>
+    <a href="#projects" 
+       class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+       View My Work
+    </a>
 </section>
 
+<section id="about" class="max-w-5xl mx-auto py-16 text-center">
+    <h2 class="text-3xl font-bold mb-6">About Me</h2>
+    <p class="text-gray-600">
+        Motivated Computer Science graduate seeking an entry-level opportunity where
+        I can apply strong problem-solving skills, programming knowledge, and core
+        computer science fundamentals to contribute to organizational goals,
+        learn new technologies quickly, and grow as a versatile software professional.
+    </p>
+</section>
 
-    <!-- CONTACT -->
-    <section id="contact" class="section">
-        <h2>Contact Me</h2>
-        <p>Phone: +91 6281857512</p>
-        <p>Email: adepupreetham4@gmail.com</p>
-        <p>GitHub: github.com/adepupreetham4</p>
-    </section>
+<!-- EDUCATION -->
+<section id="education" class="bg-white py-16">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-3xl font-bold text-center mb-10">Education</h2>
 
-    <footer>
-        <p>© 2026 Preetham. All Rights Reserved.</p>
-    </footer>
+    <div class="grid md:grid-cols-2 gap-8">
+      <div class="bg-gray-100 p-6 rounded-lg shadow">
+        <h3 class="text-xl font-semibold">Bachelor of Technology</h3>
+        <p>Computer Science & Engineering</p>
+        <p><strong>Vasavi College Of Engineering</strong> | 2022 - 2026</p>
+        <p>CGPA: 8.58</p>
+      </div>
+
+      <div class="bg-gray-100 p-6 rounded-lg shadow">
+        <h3 class="text-xl font-semibold">Intermediate</h3>
+        <p>MPC</p>
+        <p><strong>Sri Chaitanya Junior College</strong> | 2020 - 2022</p>
+        <p>Percentage: 98.1%</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills" class="py-16">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-3xl font-bold text-center mb-10">Skills</h2>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded shadow text-center">HTML</div>
+      <div class="bg-white p-4 rounded shadow text-center">CSS</div>
+      <div class="bg-white p-4 rounded shadow text-center">JavaScript</div>
+      <div class="bg-white p-4 rounded shadow text-center">React</div>
+      <div class="bg-white p-4 rounded shadow text-center">Node.js</div>
+      <div class="bg-white p-4 rounded shadow text-center">MongoDB</div>
+      <div class="bg-white p-4 rounded shadow text-center">Python</div>
+      <div class="bg-white p-4 rounded shadow text-center">Java</div>
+      <div class="bg-white p-4 rounded shadow text-center">SQL</div>
+      <div class="bg-white p-4 rounded shadow text-center">Machine Learning</div>
+      <div class="bg-white p-4 rounded shadow text-center">Artificial Intelligence</div>
+      <div class="bg-white p-4 rounded shadow text-center">C</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects" class="bg-white py-16">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-3xl font-bold text-center mb-10">Projects</h2>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="bg-gray-100 p-6 rounded-lg shadow">
+        <h3 class="text-xl font-semibold">AI Theft Detection</h3>
+        <p>Real-time crime detection using YOLO & LRCN</p>
+      </div>
+
+      <div class="bg-gray-100 p-6 rounded-lg shadow">
+        <h3 class="text-xl font-semibold">Online Home Kitchen</h3>
+        <p>Custom food ordering MERN application</p>
+      </div>
+
+      <div class="bg-gray-100 p-6 rounded-lg shadow">
+        <h3 class="text-xl font-semibold">AI Resume JD Matcher</h3>
+        <p>Compares resumes with job descriptions and suggests improvements</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CERTIFICATIONS -->
+<section id="certifications" class="py-16">
+  <div class="max-w-5xl mx-auto text-center">
+    <h2 class="text-3xl font-bold mb-6">Certifications</h2>
+    <ul class="space-y-2 text-gray-600">
+      <li>NPTEL – Programming in C, DBMS, Python</li>
+      <li>AWS Academy – Cloud Architecting, Foundations</li>
+      <li>Cisco – PCAP Python, Programming in Java</li>
+      <li>Infosys Springboard – Python Foundation</li>
+      <li>HackerRank – Problem Solving, Python, SQL</li>
+    </ul>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="bg-white py-16 text-center">
+  <h2 class="text-3xl font-bold mb-4">Contact Me</h2>
+  <p>Phone: +91 6281857512</p>
+  <p>Email: adepupreetham4@gmail.com</p>
+  <p>GitHub: github.com/adepupreetham4</p>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-gray-900 text-white text-center p-4">
+  <p>© 2026 Preetham. All Rights Reserved.</p>
+</footer>
 
 </body>
-
 </html>
